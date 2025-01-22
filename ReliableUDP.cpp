@@ -17,6 +17,10 @@
 using namespace std;
 using namespace net;
 
+// Constants for better readability
+/*
+* Magic Numbers can be replaced for the better maintainability
+*/
 const int ServerPort = 30000;
 const int ClientPort = 30001;
 const int ProtocolId = 0x11223344;
@@ -98,11 +102,12 @@ public:
 
 	float GetSendRate()
 	{
+		// adjust send rate based on the current mode
 		return mode == Good ? 30.0f : 10.0f;
 	}
 
 private:
-
+	// Enumeration for managing flow control states
 	enum Mode
 	{
 		Good,
@@ -115,8 +120,11 @@ private:
 	float penalty_reduction_accumulator;
 };
 
-// ----------------------------------------------
+//  Main function body ----------------------------------------------
 
+/*
+separate the Client and server tasks
+*/
 int main(int argc, char* argv[])
 {
 	// parse command line
@@ -133,25 +141,33 @@ int main(int argc, char* argv[])
 	if (argc >= 2)
 	{
 		int a, b, c, d;
+		// retrieve additional command line arguments to determine the mode and addresses	
+
 		if (sscanf(argv[1], "%d.%d.%d.%d", &a, &b, &c, &d))
 		{
 			mode = Client;
 			address = Address(a, b, c, d, ServerPort);
 		}
 	}
+	/*
+	allocating sockets for sending metadata allocation from a reliable connection
+	*/
 
-	// initialize
+	// initialzing  sockets in this parts
 
 	if (!InitializeSockets())
 	{
 		printf("failed to initialize sockets\n");
 		return 1;
 	}
+	// create a reliable connection
 
 	ReliableConnection connection(ProtocolId, TimeOut);
 
+	// determine the port based on mode
 	const int port = mode == Server ? ServerPort : ClientPort;
 
+	//start the connection on the specific port
 	if (!connection.Start(port))
 	{
 		printf("could not start connection on port %d\n", port);
@@ -199,11 +215,12 @@ int main(int argc, char* argv[])
 			printf("connection failed\n");
 			break;
 		}
-
+		//server task
 		// send and receive packets
 
 		sendAccumulator += DeltaTime;
-
+		
+		//send packets at the specific rate
 		while (sendAccumulator > 1.0f / sendRate)
 		{
 			unsigned char packet[PacketSize];
@@ -242,7 +259,10 @@ int main(int argc, char* argv[])
 		// show connection stats
 
 		statsAccumulator += DeltaTime;
-
+		//display connection statistics at intervals
+		/*
+		verifying the file integrity and writing the pieces of the disk file intervals
+		*/
 		while (statsAccumulator >= 0.25f && connection.IsConnected())
 		{
 			float rtt = connection.GetReliabilitySystem().GetRoundTripTime();
