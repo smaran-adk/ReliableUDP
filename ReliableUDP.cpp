@@ -1,3 +1,10 @@
+/*
+*
+*	This file is used in order to run the reliableUDP application. Depending on if command-line arguments are used,
+*	the program will either be ran as a Client or a Server. The client is used to send an ASCII file to the server
+*	through a UDP protocol.
+*/
+
 
 /*
 	Reliability and Flow Control Example
@@ -147,12 +154,8 @@ int main(int argc, char* argv[])
 	{
 		int a, b, c, d;
 		// retrieve additional command line arguments to determine the mode and addresses	
-<<<<<<< HEAD
-		
-		#pragma warning(suppress : 4996)
-=======
+
 #pragma warning(supress:4996)
->>>>>>> bad102fc8499ad208daad21e94f245fc2b05ad3c
 		if (sscanf(argv[1], "%d.%d.%d.%d", &a, &b, &c, &d))
 		{
 			mode = Client;
@@ -191,10 +194,6 @@ int main(int argc, char* argv[])
 
 		binaryContent = readFileIntoVector(sendingFile);
 	}
-<<<<<<< HEAD
-=======
-
->>>>>>> bad102fc8499ad208daad21e94f245fc2b05ad3c
 	if (!InitializeSockets())
 	{
 		printf("failed to initialize sockets\n");
@@ -264,6 +263,13 @@ int main(int argc, char* argv[])
 		while (sendAccumulator > 1.0f / sendRate)
 		{
 			unsigned char packet[PacketSize];
+
+			// If the program is being run as a client, read the vector for the file content and send it as a packet
+
+			if (mode == Client)
+			{
+				readVectorToCharArray(binaryContent, packet, startingIndex);
+			}
 			memset(packet, 0, sizeof(packet));
 			connection.SendPacket(packet, sizeof(packet));
 			sendAccumulator -= 1.0f / sendRate;
@@ -372,4 +378,24 @@ void readVectorToCharArray(const std::vector<unsigned char>& data, unsigned char
 	for (std::size_t i = 0; i < bytesToCopy; ++i) {
 		output[i] = data[startIndex + i];
 	}
+}
+void writeCharArrayToFile(const char* fileName, const unsigned char* data, std::size_t dataSize)
+{
+	std::ofstream file(fileName, std::ios::binary); // Open the file in binary mode
+
+	if (!file.is_open()) {
+		printf("ERROR: File open error...\n");
+		return;
+	}
+
+
+	file.write(reinterpret_cast<const char*>(data), dataSize);
+
+	// Check if the write operation was successful
+	if (!file.good()) {
+		printf("ERROR: Could not write to file...\n");
+	}
+
+
+	file.close();
 }

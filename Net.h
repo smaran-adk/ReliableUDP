@@ -1,8 +1,18 @@
 /*
+*
+*	This file holds the methods and classes used to build a reliableUDP file sending protocol. As such, this
+*	file is used with our main() function to run as either a client or a server depending on the use of command-line
+*	arguments in order to implement the functions found in this file.
+*/
+
+
+/*
 	Simple Network Library from "Networking for Game Programmers"
 	http://www.gaffer.org/networking-for-game-programmers
 	Author: Glenn Fiedler <gaffer@gaffer.org>
 */
+
+
 
 #ifndef NET_H
 #define NET_H
@@ -14,6 +24,8 @@
 #define PLATFORM_WINDOWS  1
 #define PLATFORM_MAC      2
 #define PLATFORM_UNIX     3
+
+#define PacketSizeHack 384
 
 #if defined(_WIN32)
 #define PLATFORM PLATFORM_WINDOWS
@@ -153,7 +165,7 @@ namespace net
 	{
 #if PLATFORM == PLATFORM_WINDOWS
 		WSADATA WsaData;
-		return WSAStartup(MAKEWORD(2, 2), &WsaData) != NO_ERROR;
+		return WSAStartup(MAKEWORD(2, 2), &WsaData) == NO_ERROR;
 #else
 		return true;
 #endif
@@ -202,7 +214,7 @@ namespace net
 			address.sin_addr.s_addr = INADDR_ANY;
 			address.sin_port = htons((unsigned short)port);
 
-			if (bind(socket, (const sockaddr*)&address, sizeof(sockaddr_in)) < 0)
+			if (::bind(socket, (const sockaddr*)&address, sizeof(sockaddr_in)) < 0)
 			{
 				printf("failed to bind socket\n");
 				Close();
@@ -443,8 +455,8 @@ namespace net
 			assert(running);
 			if (address.GetAddress() == 0)
 				return false;
-			unsigned char packet[size + 4];
-			ar) (protocolId >> 24);
+			unsigned char packet[PacketSizeHack + 4];
+			packet[0] = (unsigned char)(protocolId >> 24);
 			packet[1] = (unsigned char)((protocolId >> 16) & 0xFF);
 			packet[2] = (unsigned char)((protocolId >> 8) & 0xFF);
 			packet[3] = (unsigned char)((protocolId) & 0xFF);
@@ -455,7 +467,7 @@ namespace net
 		virtual int ReceivePacket(unsigned char data[], int size)
 		{
 			assert(running);
-			unsigned char packet[size + 4];
+			unsigned char packet[PacketSizeHack + 4];
 			Address sender;
 			int bytes_read = socket.Receive(sender, packet, size + 4);
 			if (bytes_read == 0)
@@ -969,7 +981,7 @@ namespace net
 			}
 #endif
 			const int header = 12;
-			unsigned char packet[header + size];
+			unsigned char packet[header + PacketSizeHack];
 			unsigned int seq = reliabilitySystem.GetLocalSequence();
 			unsigned int ack = reliabilitySystem.GetRemoteSequence();
 			unsigned int ack_bits = reliabilitySystem.GenerateAckBits();
@@ -986,7 +998,7 @@ namespace net
 			const int header = 12;
 			if (size <= header)
 				return false;
-			unsigned char packet[header + size];
+			unsigned char packet[header + PacketSizeHack];
 			int received_bytes = Connection::ReceivePacket(packet, size + header);
 			if (received_bytes == 0)
 				return false;
