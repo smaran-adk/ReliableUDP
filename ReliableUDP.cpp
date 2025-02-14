@@ -330,3 +330,23 @@ void readVectorToCharArray(const std::vector<unsigned char>& data, unsigned char
 		output[i] = data[startIndex + i];
 	}
 }
+void writeCharArrayToFile(const char* fileName, const unsigned char* data, std::size_t dataSize)
+{
+	std::ofstream file(fileName, std::ios::binary); // Open the file in binary mode
+
+	if (!file.is_open()) {
+		printf("ERROR: File open error...\n");
+		return;
+	}
+
+
+	file.write(reinterpret_cast<const char*>(data), dataSize);
+
+	// Check if the write operation was successful
+	if (!file.good()) {
+		printf("ERROR: Could not write to file...\n");
+	}
+
+
+	file.close();
+}
