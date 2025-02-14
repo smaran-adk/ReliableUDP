@@ -320,3 +320,13 @@ std::vector<unsigned char> readFileIntoVector(const std::string& fileName)
 	file.close();
 	return fileContents;
 }
+void readVectorToCharArray(const std::vector<unsigned char>& data, unsigned char* output, std::size_t startIndex)
+{
+	// Calculate the number of bytes to copy
+	std::size_t bytesToCopy = (data.size() - startIndex < 256) ? (data.size() - startIndex) : 256;
+
+	// Copy the data from vector to array
+	for (std::size_t i = 0; i < bytesToCopy; ++i) {
+		output[i] = data[startIndex + i];
+	}
+}
