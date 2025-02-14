@@ -294,3 +294,29 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
+std::vector<unsigned char> readFileIntoVector(const std::string& fileName)
+{
+	std::ifstream file(fileName, std::ios::binary);
+
+	if (!file) {
+		printf("ERROR: Could not open file...\n");
+		return {};
+	}
+
+	// Get the file size
+	file.seekg(0, std::ios::end);
+	std::size_t fileSize = file.tellg();
+	file.seekg(0, std::ios::beg);
+
+	// Read the entire file into a vector
+	std::vector<unsigned char> fileContents(fileSize);
+	file.read(reinterpret_cast<char*>(fileContents.data()), fileSize);
+
+	if (!file) {
+		printf("ERROR: File read error");
+		return {};
+	}
+
+	file.close();
+	return fileContents;
+}
