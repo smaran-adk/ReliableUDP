@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 	{
 		int a, b, c, d;
 		// retrieve additional command line arguments to determine the mode and addresses	
-
+#pragma warning(supress:4996)
 		if (sscanf(argv[1], "%d.%d.%d.%d", &a, &b, &c, &d))
 		{
 			mode = Client;
@@ -159,6 +159,33 @@ int main(int argc, char* argv[])
 	*/
 
 	// initialzing  sockets in this parts
+
+	char* sendingFile = NULL;
+	std::vector<unsigned char> binaryContent;
+	size_t startingIndex = 0;
+
+	if (argc == 3 && mode == Client)
+	{
+		sendingFile = argv[2];
+
+		ifstream file;
+
+
+
+		file.open(sendingFile);
+
+
+
+		if (!file)
+		{
+			printf("The file does not exist\n");
+			return 0;
+		}
+
+		file.close();
+
+		binaryContent = readFileIntoVector(sendingFile);
+	}
 
 	if (!InitializeSockets())
 	{
@@ -329,24 +356,4 @@ void readVectorToCharArray(const std::vector<unsigned char>& data, unsigned char
 	for (std::size_t i = 0; i < bytesToCopy; ++i) {
 		output[i] = data[startIndex + i];
 	}
-}
-void writeCharArrayToFile(const char* fileName, const unsigned char* data, std::size_t dataSize)
-{
-	std::ofstream file(fileName, std::ios::binary); // Open the file in binary mode
-
-	if (!file.is_open()) {
-		printf("ERROR: File open error...\n");
-		return;
-	}
-
-
-	file.write(reinterpret_cast<const char*>(data), dataSize);
-
-	// Check if the write operation was successful
-	if (!file.good()) {
-		printf("ERROR: Could not write to file...\n");
-	}
-
-
-	file.close();
 }
