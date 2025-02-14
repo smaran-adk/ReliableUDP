@@ -147,7 +147,8 @@ int main(int argc, char* argv[])
 	{
 		int a, b, c, d;
 		// retrieve additional command line arguments to determine the mode and addresses	
-
+		
+		#pragma warning(suppress : 4996)
 		if (sscanf(argv[1], "%d.%d.%d.%d", &a, &b, &c, &d))
 		{
 			mode = Client;
@@ -160,6 +161,32 @@ int main(int argc, char* argv[])
 
 	// initialzing  sockets in this parts
 
+	char* sendingFile = NULL;
+	std::vector<unsigned char> binaryContent;
+	size_t startingIndex = 0;
+
+	if (argc == 3 && mode == Client)
+	{
+		sendingFile = argv[2];
+
+		ifstream file;
+
+
+
+		file.open(sendingFile);
+
+
+
+		if (!file)
+		{
+			printf("The file does not exist\n");
+			return 0;
+		}
+
+		file.close();
+
+		binaryContent = readFileIntoVector(sendingFile);
+	}
 	if (!InitializeSockets())
 	{
 		printf("failed to initialize sockets\n");
@@ -238,7 +265,15 @@ int main(int argc, char* argv[])
 		{
 			unsigned char packet[256];
 			int bytes_read = connection.ReceivePacket(packet, sizeof(packet));
-			if (bytes_read == 0)
+
+			// If any content was in the packet, write the content to a file (otherwise, break from the loop)
+
+			if (bytes_read > 0)
+			{
+				writeCharArrayToFile("output.txt", packet, sizeof(packet));
+			}
+
+			else if (bytes_read == 0)
 				break;
 		}
 
