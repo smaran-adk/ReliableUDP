@@ -12,10 +12,15 @@
 
 #include "Net.h"
 
+std::vector<unsigned char> readFileIntoVector(const std::string& filename);
+void readVectorToCharArray(const std::vector<unsigned char>& data, unsigned char* output, std::size_t startIndex);
+void writeCharArrayToFile(const char* filename, const unsigned char* data, std::size_t dataSize);
+
 //#define SHOW_ACKS
 
 using namespace std;
 using namespace net;
+
 
 // Constants for better readability
 /*
